@@ -74,6 +74,17 @@ async function authenticateQbittorrent(settings) {
   }
 }
 
+// Fetch with automatic auth retry on 403
+async function fetchWithAuth(settings, url, options = {}) {
+  const fetchOptions = { credentials: 'include', mode: 'cors', ...options };
+  let response = await fetch(url, fetchOptions);
+  if (response.status === 403) {
+    await authenticateQbittorrent(settings);
+    response = await fetch(url, fetchOptions);
+  }
+  return response;
+}
+
 // Update the test connection function
 testConnectionButton.addEventListener('click', async () => {
   try {
@@ -82,15 +93,11 @@ testConnectionButton.addEventListener('click', async () => {
       throw new Error('WebUI URL is required');
     }
 
-    // First authenticate
-    await authenticateQbittorrent(settings);
-
-    // Then test the connection
-    const response = await fetch(apiUrl(settings.webuiUrl, '/api/v2/app/version'), {
-      method: 'GET',
-      credentials: 'include',
-      mode: 'cors'
-    });
+    const response = await fetchWithAuth(
+      settings,
+      apiUrl(settings.webuiUrl, '/api/v2/app/version'),
+      { method: 'GET' }
+    );
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
@@ -197,21 +204,13 @@ downloadButton.addEventListener('click', async () => {
   }
 
   try {
-    // Authenticate first
     await authenticateQbittorrent(settings);
 
-    // Then add torrents
     for (const magnetUrl of selectedMagnets) {
-      const response = await fetch(apiUrl(settings.webuiUrl, '/api/v2/torrents/add'), {
+      const response = await fetchWithAuth(settings, apiUrl(settings.webuiUrl, '/api/v2/torrents/add'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        credentials: 'include',
-        mode: 'cors',
-        body: new URLSearchParams({
-          urls: magnetUrl
-        })
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ urls: magnetUrl })
       });
 
       if (!response.ok) {
