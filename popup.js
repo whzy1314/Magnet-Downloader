@@ -140,19 +140,34 @@ async function scanForMagnetLinks() {
 // Update magnet links list in popup
 function updateMagnetList(magnetLinks) {
   magnetList.innerHTML = '';
-  
+
   if (magnetLinks.length === 0) {
-    magnetList.innerHTML = '<div class="magnet-item"><p>No magnet links found on this page.</p></div>';
+    const item = document.createElement('div');
+    item.className = 'magnet-item';
+    const p = document.createElement('p');
+    p.textContent = 'No magnet links found on this page.';
+    item.appendChild(p);
+    magnetList.appendChild(item);
     return;
   }
 
   magnetLinks.forEach((link, index) => {
     const item = document.createElement('div');
     item.className = 'magnet-item';
-    item.innerHTML = `
-      <input type="checkbox" id="magnet-${index}" data-url="${link.url}">
-      <label class="magnet-name" for="magnet-${index}" title="${link.name}">${link.name}</label>
-    `;
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = `magnet-${index}`;
+    checkbox.dataset.url = link.url;
+
+    const label = document.createElement('label');
+    label.className = 'magnet-name';
+    label.htmlFor = `magnet-${index}`;
+    label.title = link.name;
+    label.textContent = link.name;
+
+    item.appendChild(checkbox);
+    item.appendChild(label);
     magnetList.appendChild(item);
   });
 }
