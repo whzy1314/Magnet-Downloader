@@ -7,6 +7,7 @@ const testConnectionButton = document.getElementById('test-connection');
 const statusMessage = document.getElementById('status-message');
 const selectAllCheckbox = document.getElementById('select-all');
 const selectAllRow = document.getElementById('select-all-row');
+const searchFilter = document.getElementById('search-filter');
 
 // Normalize WebUI URL — strip trailing slash
 function apiUrl(baseUrl, path) {
@@ -41,6 +42,18 @@ document.querySelectorAll('.tab-button').forEach(button => {
 selectAllCheckbox.addEventListener('change', () => {
   const visibleCheckboxes = magnetList.querySelectorAll('.magnet-item:not([style*="display: none"]) input[type="checkbox"]');
   visibleCheckboxes.forEach(cb => { cb.checked = selectAllCheckbox.checked; });
+});
+
+// Search/filter magnet links
+searchFilter.addEventListener('input', () => {
+  const query = searchFilter.value.toLowerCase();
+  const items = magnetList.querySelectorAll('.magnet-item');
+  items.forEach(item => {
+    const label = item.querySelector('.magnet-name');
+    if (label) {
+      item.style.display = label.textContent.toLowerCase().includes(query) ? 'flex' : 'none';
+    }
+  });
 });
 
 // Load settings on popup open
@@ -218,9 +231,11 @@ function updateMagnetList(magnetLinks) {
     magnetList.appendChild(item);
   });
 
-  // Show select-all row when there are links
+  // Show select-all row and search filter when there are links
   selectAllRow.style.display = magnetLinks.length > 0 ? 'flex' : 'none';
   selectAllCheckbox.checked = false;
+  searchFilter.style.display = magnetLinks.length > 0 ? 'block' : 'none';
+  searchFilter.value = '';
 
   // Sync select-all when individual checkboxes change
   magnetList.addEventListener('change', () => {
