@@ -15,6 +15,12 @@ A Chrome extension to list and manage magnet links for qBittorrent.
 - Badge count on the extension icon showing how many magnet links are on the page
 - Smart session reuse — only re-authenticates when needed
 - Dark mode support (follows system theme)
+- **Torrent search via Jackett** — search for torrents by keyword across 500+ indexers and download results directly
+
+## Prerequisites (for search feature)
+
+- [Jackett](https://github.com/Jackett/Jackett) running locally or on your network (e.g. `http://localhost:9117`)
+- At least one indexer configured in Jackett
 
 ## Installation
 
@@ -33,6 +39,13 @@ A Chrome extension to list and manage magnet links for qBittorrent.
 5. Click "Download Selected" to add torrents to qBittorrent
 6. Each torrent shows a checkmark or X indicating success or failure
 
+### Searching for torrents
+
+1. Go to the **Search** tab in the popup
+2. Type keywords and press Enter or click Search
+3. Results from all your Jackett indexers appear with name, size, seeders, leechers, and tracker
+4. Select the torrents you want and click "Download Selected"
+
 ## Settings
 
 Go to the **Settings** tab in the popup to configure:
@@ -40,6 +53,8 @@ Go to the **Settings** tab in the popup to configure:
 - **WebUI URL** — your qBittorrent WebUI address (e.g. `http://localhost:8080`)
 - **Username** / **Password** — your qBittorrent credentials
 - **Test Connection** — verify connectivity and see the qBittorrent version
+- **Jackett URL** — your Jackett address (e.g. `http://localhost:9117`)
+- **Jackett API Key** — found in Jackett's web UI (top right of the dashboard)
 
 ## Troubleshooting
 
