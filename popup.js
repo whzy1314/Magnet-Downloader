@@ -11,6 +11,17 @@ function apiUrl(baseUrl, path) {
   return baseUrl.replace(/\/+$/, '') + path;
 }
 
+// Set button loading state
+function setButtonLoading(button, loading, loadingText) {
+  button.disabled = loading;
+  if (loading) {
+    button.dataset.originalText = button.textContent;
+    button.textContent = loadingText || 'Loading...';
+  } else {
+    button.textContent = button.dataset.originalText || button.textContent;
+  }
+}
+
 // Tab switching
 document.querySelectorAll('.tab-button').forEach(button => {
   button.addEventListener('click', () => {
@@ -87,6 +98,7 @@ async function fetchWithAuth(settings, url, options = {}) {
 
 // Update the test connection function
 testConnectionButton.addEventListener('click', async () => {
+  setButtonLoading(testConnectionButton, true, 'Testing...');
   try {
     const settings = await chrome.storage.sync.get(['webuiUrl', 'username', 'password']);
     if (!settings.webuiUrl) {
@@ -115,6 +127,8 @@ testConnectionButton.addEventListener('click', async () => {
         '3. qBittorrent is running and accessible';
     }
     showStatus(`Connection failed: ${errorMessage}`, 'error');
+  } finally {
+    setButtonLoading(testConnectionButton, false);
   }
 });
 
@@ -185,7 +199,14 @@ function updateMagnetList(magnetLinks) {
 }
 
 // Refresh magnet links
-refreshButton.addEventListener('click', scanForMagnetLinks);
+refreshButton.addEventListener('click', async () => {
+  setButtonLoading(refreshButton, true, 'Scanning...');
+  try {
+    await scanForMagnetLinks();
+  } finally {
+    setButtonLoading(refreshButton, false);
+  }
+});
 
 // Update the download function to handle authentication
 downloadButton.addEventListener('click', async () => {
@@ -202,6 +223,8 @@ downloadButton.addEventListener('click', async () => {
     showStatus('Please select at least one magnet link', 'error');
     return;
   }
+
+  setButtonLoading(downloadButton, true, 'Downloading...');
 
   try {
     await authenticateQbittorrent(settings);
@@ -222,6 +245,8 @@ downloadButton.addEventListener('click', async () => {
   } catch (error) {
     console.error('Download error details:', error);
     showStatus(`Error adding torrents: ${error.message}`, 'error');
+  } finally {
+    setButtonLoading(downloadButton, false);
   }
 });
 
