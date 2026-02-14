@@ -60,6 +60,7 @@ searchFilter.addEventListener('input', () => {
 document.addEventListener('DOMContentLoaded', () => {
   loadSettings();
   scanForMagnetLinks();
+  loadCategories();
 });
 
 // Settings management
@@ -68,6 +69,39 @@ async function loadSettings() {
   document.getElementById('webui-url').value = settings.webuiUrl || '';
   document.getElementById('username').value = settings.username || '';
   document.getElementById('password').value = settings.password || '';
+}
+
+// Load qBittorrent categories
+async function loadCategories() {
+  try {
+    const settings = await chrome.storage.sync.get(['webuiUrl', 'username', 'password']);
+    if (!settings.webuiUrl) return;
+
+    const response = await fetchWithAuth(
+      settings,
+      apiUrl(settings.webuiUrl, '/api/v2/torrents/categories'),
+      { method: 'GET' }
+    );
+
+    if (!response.ok) return;
+
+    const categories = await response.json();
+    const select = document.getElementById('category-select');
+    const categoryRow = document.getElementById('category-row');
+
+    select.innerHTML = '<option value="">No category</option>';
+
+    for (const name of Object.keys(categories).sort()) {
+      const option = document.createElement('option');
+      option.value = name;
+      option.textContent = name;
+      select.appendChild(option);
+    }
+
+    categoryRow.style.display = Object.keys(categories).length > 0 ? 'flex' : 'none';
+  } catch (e) {
+    // Silently fail — categories are optional
+  }
 }
 
 saveSettingsButton.addEventListener('click', async () => {
