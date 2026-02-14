@@ -183,6 +183,76 @@
       color: #C62828;
       display: block;
     }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #1e1e1e;
+        color: #e0e0e0;
+      }
+
+      .settings-panel, .links-panel {
+        background: #2d2d2d;
+      }
+
+      input[type="text"],
+      input[type="password"],
+      input[type="url"],
+      #search-filter {
+        background-color: #3a3a3a;
+        border-color: #555;
+        color: #e0e0e0;
+      }
+
+      select {
+        background-color: #3a3a3a;
+        border-color: #555;
+        color: #e0e0e0;
+      }
+
+      .magnet-item {
+        border-bottom-color: #444;
+      }
+
+      .select-all-row {
+        background-color: #333;
+        border-bottom-color: #555;
+      }
+
+      .tab-button {
+        color: #aaa;
+      }
+
+      .tab-button.active {
+        color: #64B5F6;
+        border-bottom-color: #64B5F6;
+      }
+
+      label {
+        color: #e0e0e0;
+      }
+
+      h3 {
+        color: #e0e0e0;
+      }
+
+      .copy-btn {
+        color: #aaa;
+      }
+
+      .copy-btn:hover {
+        color: #64B5F6;
+      }
+
+      .status-message.success {
+        background-color: #1B5E20;
+        color: #A5D6A7;
+      }
+
+      .status-message.error {
+        background-color: #B71C1C;
+        color: #EF9A9A;
+      }
+    }
   </style>
 </head>
 <body>
