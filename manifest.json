@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Magnet Link Manager",
-  "version": "1.1",
+  "version": "1.2",
   "description": "Lists and manages magnet links for qBittorrent",
   "permissions": [
     "activeTab",

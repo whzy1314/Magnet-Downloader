@@ -8,6 +8,10 @@ const statusMessage = document.getElementById('status-message');
 const selectAllCheckbox = document.getElementById('select-all');
 const selectAllRow = document.getElementById('select-all-row');
 const searchFilter = document.getElementById('search-filter');
+const searchInput = document.getElementById('search-input');
+const searchBtn = document.getElementById('search-btn');
+const searchResults = document.getElementById('search-results');
+const downloadSearchBtn = document.getElementById('download-search-selected');
 
 // Normalize WebUI URL — strip trailing slash
 function apiUrl(baseUrl, path) {
@@ -65,10 +69,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Settings management
 async function loadSettings() {
-  const settings = await chrome.storage.sync.get(['webuiUrl', 'username', 'password']);
+  const settings = await chrome.storage.sync.get(['webuiUrl', 'username', 'password', 'jackettUrl', 'jackettApikey']);
   document.getElementById('webui-url').value = settings.webuiUrl || '';
   document.getElementById('username').value = settings.username || '';
   document.getElementById('password').value = settings.password || '';
+  document.getElementById('jackett-url').value = settings.jackettUrl || '';
+  document.getElementById('jackett-apikey').value = settings.jackettApikey || '';
 }
 
 // Load qBittorrent categories
@@ -108,7 +114,9 @@ saveSettingsButton.addEventListener('click', async () => {
   const settings = {
     webuiUrl: document.getElementById('webui-url').value.trim(),
     username: document.getElementById('username').value.trim(),
-    password: document.getElementById('password').value.trim()
+    password: document.getElementById('password').value.trim(),
+    jackettUrl: document.getElementById('jackett-url').value.trim(),
+    jackettApikey: document.getElementById('jackett-apikey').value.trim()
   };
 
   await chrome.storage.sync.set(settings);
@@ -393,4 +401,217 @@ function showStatus(message, type) {
   setTimeout(() => {
     statusMessage.className = 'status-message';
   }, 5000);
-} 
+}
+
+// Format bytes to human-readable size
+function formatBytes(bytes) {
+  if (bytes === 0) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  const size = (bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0);
+  return `${size} ${units[i]}`;
+}
+
+// Search torrents via Jackett API
+async function searchTorrents(query) {
+  const settings = await chrome.storage.sync.get(['jackettUrl', 'jackettApikey']);
+  if (!settings.jackettUrl || !settings.jackettApikey) {
+    throw new Error('Please configure Jackett URL and API Key in settings');
+  }
+
+  const url = apiUrl(settings.jackettUrl, '/api/v2.0/indexers/all/results')
+    + '?apikey=' + encodeURIComponent(settings.jackettApikey)
+    + '&Query=' + encodeURIComponent(query);
+
+  const response = await fetch(url, { mode: 'cors' });
+  if (!response.ok) {
+    throw new Error(`Jackett request failed: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  const results = (data.Results || [])
+    .filter(r => r.MagnetUri)
+    .sort((a, b) => (b.Seeders || 0) - (a.Seeders || 0));
+
+  return results;
+}
+
+// Render search results into the search-results container
+function renderSearchResults(results) {
+  searchResults.innerHTML = '';
+
+  if (results.length === 0) {
+    const msg = document.createElement('p');
+    msg.textContent = 'No results found.';
+    searchResults.appendChild(msg);
+    return;
+  }
+
+  results.forEach((result, index) => {
+    const item = document.createElement('div');
+    item.className = 'result-item';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = `result-${index}`;
+    checkbox.dataset.url = result.MagnetUri;
+
+    const info = document.createElement('div');
+    info.className = 'result-info';
+
+    const name = document.createElement('span');
+    name.className = 'result-name';
+    name.textContent = result.Title;
+    name.title = result.Title;
+
+    const meta = document.createElement('div');
+    meta.className = 'result-meta';
+
+    const size = document.createElement('span');
+    size.className = 'result-size';
+    size.textContent = formatBytes(result.Size || 0);
+
+    const seeders = document.createElement('span');
+    seeders.className = 'seeders';
+    seeders.textContent = 'S: ' + (result.Seeders || 0);
+
+    const leechers = document.createElement('span');
+    leechers.className = 'leechers';
+    leechers.textContent = 'L: ' + (result.Peers || 0);
+
+    const tracker = document.createElement('span');
+    tracker.className = 'tracker';
+    tracker.textContent = result.Tracker || '';
+
+    meta.appendChild(size);
+    meta.appendChild(seeders);
+    meta.appendChild(leechers);
+    meta.appendChild(tracker);
+
+    info.appendChild(name);
+    info.appendChild(meta);
+
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'copy-btn';
+    copyBtn.textContent = 'Copy';
+    copyBtn.title = 'Copy magnet URL';
+    copyBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      await navigator.clipboard.writeText(result.MagnetUri);
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
+    });
+
+    item.appendChild(checkbox);
+    item.appendChild(info);
+    item.appendChild(copyBtn);
+    searchResults.appendChild(item);
+  });
+}
+
+// Search button click handler
+searchBtn.addEventListener('click', async () => {
+  const query = searchInput.value.trim();
+  if (!query) {
+    showStatus('Please enter a search term', 'error');
+    return;
+  }
+
+  setButtonLoading(searchBtn, true, 'Searching...');
+  try {
+    const results = await searchTorrents(query);
+    renderSearchResults(results);
+  } catch (error) {
+    showStatus(`Search failed: ${error.message}`, 'error');
+  } finally {
+    setButtonLoading(searchBtn, false);
+  }
+});
+
+// Enter key in search input triggers search
+searchInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    searchBtn.click();
+  }
+});
+
+// Download selected search results
+downloadSearchBtn.addEventListener('click', async () => {
+  const settings = await chrome.storage.sync.get(['webuiUrl', 'username', 'password']);
+  if (!settings.webuiUrl) {
+    showStatus('Please configure qBittorrent settings first', 'error');
+    return;
+  }
+
+  const selectedCheckboxes = Array.from(searchResults.querySelectorAll('input[type="checkbox"]:checked'))
+    .filter(cb => cb.dataset.url);
+
+  if (selectedCheckboxes.length === 0) {
+    showStatus('Please select at least one search result', 'error');
+    return;
+  }
+
+  setButtonLoading(downloadSearchBtn, true, 'Downloading...');
+
+  try {
+    await authenticateQbittorrent(settings);
+
+    const category = document.getElementById('category-select')?.value || '';
+
+    const results = await Promise.allSettled(
+      selectedCheckboxes.map(async (checkbox) => {
+        const params = { urls: checkbox.dataset.url };
+        if (category) params.category = category;
+
+        const response = await fetchWithAuth(settings, apiUrl(settings.webuiUrl, '/api/v2/torrents/add'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams(params)
+        });
+
+        if (!response.ok) {
+          throw new Error(`${response.status}`);
+        }
+
+        return checkbox;
+      })
+    );
+
+    let successCount = 0;
+    let failCount = 0;
+
+    results.forEach((result, i) => {
+      const checkbox = selectedCheckboxes[i];
+      const item = checkbox.closest('.result-item');
+
+      const existing = item.querySelector('.status-icon');
+      if (existing) existing.remove();
+
+      const icon = document.createElement('span');
+      icon.className = 'status-icon';
+
+      if (result.status === 'fulfilled') {
+        icon.classList.add('success');
+        icon.textContent = '\u2713';
+        successCount++;
+      } else {
+        icon.classList.add('fail');
+        icon.textContent = '\u2717';
+        failCount++;
+      }
+
+      item.appendChild(icon);
+    });
+
+    if (failCount === 0) {
+      showStatus(`Successfully added ${successCount} torrent(s)`, 'success');
+    } else {
+      showStatus(`Added ${successCount}, failed ${failCount} torrent(s)`, 'error');
+    }
+  } catch (error) {
+    console.error('Download error details:', error);
+    showStatus(`Error adding torrents: ${error.message}`, 'error');
+  } finally {
+    setButtonLoading(downloadSearchBtn, false);
+  }
+}); 
