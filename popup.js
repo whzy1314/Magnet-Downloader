@@ -226,8 +226,20 @@ function updateMagnetList(magnetLinks) {
     label.title = link.name;
     label.textContent = link.name;
 
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'copy-btn';
+    copyBtn.textContent = 'Copy';
+    copyBtn.title = 'Copy magnet URL';
+    copyBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      await navigator.clipboard.writeText(link.url);
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
+    });
+
     item.appendChild(checkbox);
     item.appendChild(label);
+    item.appendChild(copyBtn);
     magnetList.appendChild(item);
   });
 
