@@ -141,10 +141,23 @@ async function scanForMagnetLinks() {
       target: { tabId: tab.id },
       function: () => {
         const links = Array.from(document.querySelectorAll('a[href^="magnet:"]'));
-        return links.map(link => ({
-          url: link.href,
-          name: link.textContent.trim() || extractNameFromMagnet(link.href) || 'Unnamed torrent'
-        }));
+        const seen = new Set();
+        const unique = [];
+
+        for (const link of links) {
+          const hashMatch = link.href.match(/btih:([a-fA-F0-9]{40}|[a-zA-Z2-7]{32})/i);
+          const hash = hashMatch ? hashMatch[1].toLowerCase() : link.href;
+
+          if (!seen.has(hash)) {
+            seen.add(hash);
+            unique.push({
+              url: link.href,
+              name: link.textContent.trim() || extractNameFromMagnet(link.href) || 'Unnamed torrent'
+            });
+          }
+        }
+
+        return unique;
 
         function extractNameFromMagnet(magnetUrl) {
           const match = magnetUrl.match(/dn=([^&]+)/);
