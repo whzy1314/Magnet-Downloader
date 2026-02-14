@@ -91,6 +91,11 @@
       margin-right: 8px;
     }
 
+    .select-all-row {
+      border-bottom: 2px solid #ccc;
+      background-color: #eee;
+    }
+
     .magnet-name {
       flex-grow: 1;
       overflow: hidden;
@@ -161,6 +166,10 @@
       <div class="tab-content active" id="links-tab">
         <div class="links-panel">
           <h3>Available Magnet Links</h3>
+          <div id="select-all-row" class="magnet-item select-all-row" style="display: none;">
+            <input type="checkbox" id="select-all">
+            <label for="select-all" class="magnet-name" style="font-weight: 600;">Select All</label>
+          </div>
           <div id="magnet-list" class="magnet-list">
             <div class="magnet-item">
               <p>No magnet links found on this page.</p>

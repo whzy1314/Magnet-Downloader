@@ -5,6 +5,8 @@ const downloadButton = document.getElementById('download-selected');
 const saveSettingsButton = document.getElementById('save-settings');
 const testConnectionButton = document.getElementById('test-connection');
 const statusMessage = document.getElementById('status-message');
+const selectAllCheckbox = document.getElementById('select-all');
+const selectAllRow = document.getElementById('select-all-row');
 
 // Normalize WebUI URL — strip trailing slash
 function apiUrl(baseUrl, path) {
@@ -33,6 +35,12 @@ document.querySelectorAll('.tab-button').forEach(button => {
     button.classList.add('active');
     document.getElementById(`${button.dataset.tab}-tab`).classList.add('active');
   });
+});
+
+// Select All / Deselect All
+selectAllCheckbox.addEventListener('change', () => {
+  const visibleCheckboxes = magnetList.querySelectorAll('.magnet-item:not([style*="display: none"]) input[type="checkbox"]');
+  visibleCheckboxes.forEach(cb => { cb.checked = selectAllCheckbox.checked; });
 });
 
 // Load settings on popup open
@@ -209,6 +217,19 @@ function updateMagnetList(magnetLinks) {
     item.appendChild(label);
     magnetList.appendChild(item);
   });
+
+  // Show select-all row when there are links
+  selectAllRow.style.display = magnetLinks.length > 0 ? 'flex' : 'none';
+  selectAllCheckbox.checked = false;
+
+  // Sync select-all when individual checkboxes change
+  magnetList.addEventListener('change', () => {
+    const checkboxes = magnetList.querySelectorAll('input[type="checkbox"]');
+    const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked);
+    const someChecked = Array.from(checkboxes).some(cb => cb.checked);
+    selectAllCheckbox.checked = allChecked;
+    selectAllCheckbox.indeterminate = someChecked && !allChecked;
+  });
 }
 
 // Refresh magnet links
@@ -229,8 +250,9 @@ downloadButton.addEventListener('click', async () => {
     return;
   }
 
-  const selectedMagnets = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
-    .map(checkbox => checkbox.dataset.url);
+  const selectedMagnets = Array.from(magnetList.querySelectorAll('input[type="checkbox"]:checked'))
+    .map(checkbox => checkbox.dataset.url)
+    .filter(Boolean);
 
   if (selectedMagnets.length === 0) {
     showStatus('Please select at least one magnet link', 'error');
