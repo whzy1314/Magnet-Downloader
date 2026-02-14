@@ -269,7 +269,7 @@ refreshButton.addEventListener('click', async () => {
   }
 });
 
-// Update the download function to handle authentication
+// Download selected magnets with per-torrent status
 downloadButton.addEventListener('click', async () => {
   const settings = await chrome.storage.sync.get(['webuiUrl', 'username', 'password']);
   if (!settings.webuiUrl) {
@@ -277,11 +277,10 @@ downloadButton.addEventListener('click', async () => {
     return;
   }
 
-  const selectedMagnets = Array.from(magnetList.querySelectorAll('input[type="checkbox"]:checked'))
-    .map(checkbox => checkbox.dataset.url)
-    .filter(Boolean);
+  const selectedCheckboxes = Array.from(magnetList.querySelectorAll('input[type="checkbox"]:checked'))
+    .filter(cb => cb.dataset.url);
 
-  if (selectedMagnets.length === 0) {
+  if (selectedCheckboxes.length === 0) {
     showStatus('Please select at least one magnet link', 'error');
     return;
   }
@@ -291,19 +290,60 @@ downloadButton.addEventListener('click', async () => {
   try {
     await authenticateQbittorrent(settings);
 
-    for (const magnetUrl of selectedMagnets) {
-      const response = await fetchWithAuth(settings, apiUrl(settings.webuiUrl, '/api/v2/torrents/add'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ urls: magnetUrl })
-      });
+    const category = document.getElementById('category-select')?.value || '';
 
-      if (!response.ok) {
-        throw new Error(`Failed to add torrent: ${response.status} - ${response.statusText}`);
+    const results = await Promise.allSettled(
+      selectedCheckboxes.map(async (checkbox) => {
+        const params = { urls: checkbox.dataset.url };
+        if (category) params.category = category;
+
+        const response = await fetchWithAuth(settings, apiUrl(settings.webuiUrl, '/api/v2/torrents/add'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams(params)
+        });
+
+        if (!response.ok) {
+          throw new Error(`${response.status}`);
+        }
+
+        return checkbox;
+      })
+    );
+
+    // Show per-torrent status
+    let successCount = 0;
+    let failCount = 0;
+
+    results.forEach((result, i) => {
+      const checkbox = selectedCheckboxes[i];
+      const item = checkbox.closest('.magnet-item');
+
+      // Remove existing status icons
+      const existing = item.querySelector('.status-icon');
+      if (existing) existing.remove();
+
+      const icon = document.createElement('span');
+      icon.className = 'status-icon';
+
+      if (result.status === 'fulfilled') {
+        icon.classList.add('success');
+        icon.textContent = '\u2713';
+        successCount++;
+      } else {
+        icon.classList.add('fail');
+        icon.textContent = '\u2717';
+        failCount++;
       }
-    }
 
-    showStatus(`Successfully added ${selectedMagnets.length} torrent(s) to qBittorrent`, 'success');
+      item.appendChild(icon);
+    });
+
+    if (failCount === 0) {
+      showStatus(`Successfully added ${successCount} torrent(s)`, 'success');
+    } else {
+      showStatus(`Added ${successCount}, failed ${failCount} torrent(s)`, 'error');
+    }
   } catch (error) {
     console.error('Download error details:', error);
     showStatus(`Error adding torrents: ${error.message}`, 'error');
