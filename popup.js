@@ -6,6 +6,11 @@ const saveSettingsButton = document.getElementById('save-settings');
 const testConnectionButton = document.getElementById('test-connection');
 const statusMessage = document.getElementById('status-message');
 
+// Normalize WebUI URL — strip trailing slash
+function apiUrl(baseUrl, path) {
+  return baseUrl.replace(/\/+$/, '') + path;
+}
+
 // Tab switching
 document.querySelectorAll('.tab-button').forEach(button => {
   button.addEventListener('click', () => {
@@ -46,7 +51,7 @@ saveSettingsButton.addEventListener('click', async () => {
 
 // Add this new function for authentication
 async function authenticateQbittorrent(settings) {
-  const response = await fetch(`${settings.webuiUrl}/api/v2/auth/login`, {
+  const response = await fetch(apiUrl(settings.webuiUrl, '/api/v2/auth/login'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -81,7 +86,7 @@ testConnectionButton.addEventListener('click', async () => {
     await authenticateQbittorrent(settings);
 
     // Then test the connection
-    const response = await fetch(`${settings.webuiUrl}/api/v2/app/version`, {
+    const response = await fetch(apiUrl(settings.webuiUrl, '/api/v2/app/version'), {
       method: 'GET',
       credentials: 'include',
       mode: 'cors'
@@ -197,7 +202,7 @@ downloadButton.addEventListener('click', async () => {
 
     // Then add torrents
     for (const magnetUrl of selectedMagnets) {
-      const response = await fetch(`${settings.webuiUrl}/api/v2/torrents/add`, {
+      const response = await fetch(apiUrl(settings.webuiUrl, '/api/v2/torrents/add'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
