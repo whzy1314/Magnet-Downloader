@@ -3,161 +3,94 @@
 <head>
   <title>Magnet Link Manager</title>
   <style>
+    :root {
+      --accent: #5B7FFF;
+      --accent-hover: #4A6BEF;
+      --accent-gradient: linear-gradient(135deg, #5B7FFF 0%, #8B5CF6 100%);
+      --bg-body: #F0F2F7;
+      --bg-card: #FFFFFF;
+      --bg-input: #F5F6FA;
+      --bg-hover: #F0F2FF;
+      --bg-select-all: #EEF0F8;
+      --text-primary: #1A1D2E;
+      --text-secondary: #6B7280;
+      --text-muted: #9CA3AF;
+      --border: #E5E7EB;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+      --shadow-lg: 0 8px 30px rgba(0,0,0,0.08);
+      --shadow-focus: 0 0 0 3px rgba(91,127,255,0.2);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-pill: 999px;
+      --success: #10B981;
+      --success-bg: #ECFDF5;
+      --error: #EF4444;
+      --error-bg: #FEF2F2;
+      --seeders: #10B981;
+      --leechers: #F59E0B;
+      --tracker: #6366F1;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      width: 400px;
+      width: 420px;
       padding: 16px;
+      margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+      background-color: var(--bg-body);
+      color: var(--text-primary);
     }
 
     .container {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
     }
 
-    .settings-panel, .links-panel {
-      background: #f5f5f5;
-      padding: 16px;
-      border-radius: 8px;
-    }
-
-    .form-group {
-      margin-bottom: 12px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 4px;
-      font-weight: 500;
-      color: #333;
-    }
-
-    input[type="text"],
-    input[type="password"],
-    input[type="url"] {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-
-    button {
-      background-color: #2196F3;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: background-color 0.2s;
-    }
-
-    button:hover {
-      background-color: #1976D2;
-    }
-
-    button.secondary {
-      background-color: #757575;
-    }
-
-    button.secondary:hover {
-      background-color: #616161;
-    }
-
-    button:disabled {
-      background-color: #B0BEC5;
-      cursor: not-allowed;
-      opacity: 0.7;
-    }
-
-    .magnet-list {
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    .magnet-item {
-      display: flex;
-      align-items: center;
-      padding: 8px;
-      border-bottom: 1px solid #ddd;
-    }
-
-    .magnet-item:last-child {
-      border-bottom: none;
-    }
-
-    .magnet-item input[type="checkbox"] {
-      margin-right: 8px;
-    }
-
-    .select-all-row {
-      border-bottom: 2px solid #ccc;
-      background-color: #eee;
-    }
-
-    .magnet-name {
-      flex-grow: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .copy-btn {
-      background: none;
-      border: none;
-      padding: 4px 8px;
-      cursor: pointer;
-      color: #757575;
-      font-size: 12px;
-      flex-shrink: 0;
-      min-width: auto;
-    }
-
-    .copy-btn:hover {
-      color: #2196F3;
-      background: none;
-    }
-
-    .magnet-item .status-icon,
-    .result-item .status-icon {
-      flex-shrink: 0;
-      margin-left: 4px;
-      font-size: 14px;
-    }
-
-    .magnet-item .status-icon.success,
-    .result-item .status-icon.success {
-      color: #2E7D32;
-    }
-
-    .magnet-item .status-icon.fail,
-    .result-item .status-icon.fail {
-      color: #C62828;
-    }
-
+    /* --- Tabs: segmented pill control --- */
     .tab-container {
-      margin-bottom: 16px;
+      margin-bottom: 0;
     }
 
     .tab-buttons {
       display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
+      gap: 4px;
+      padding: 4px;
+      background: var(--bg-card);
+      border-radius: var(--radius-pill);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 12px;
     }
 
     .tab-button {
-      background: none;
+      flex: 1;
+      background: transparent;
       border: none;
-      padding: 8px 16px;
+      padding: 8px 12px;
       cursor: pointer;
-      border-bottom: 2px solid transparent;
-      color: #666;
+      border-radius: var(--radius-pill);
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .tab-button:hover {
+      color: var(--text-primary);
+      background: var(--bg-hover);
     }
 
     .tab-button.active {
-      border-bottom-color: #2196F3;
-      color: #2196F3;
+      background: var(--accent-gradient);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(91,127,255,0.3);
     }
 
     .tab-content {
@@ -168,44 +101,322 @@
       display: block;
     }
 
+    /* --- Cards / Panels --- */
+    .settings-panel,
+    .links-panel,
+    .search-panel {
+      background: var(--bg-card);
+      padding: 18px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+    }
+
+    h3 {
+      margin: 0 0 14px 0;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* --- Form inputs --- */
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="url"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      box-sizing: border-box;
+      font-size: 13px;
+      color: var(--text-primary);
+      background: var(--bg-input);
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="password"]:focus,
+    input[type="url"]:focus {
+      border-color: var(--accent);
+      box-shadow: var(--shadow-focus);
+      background: var(--bg-card);
+    }
+
+    select {
+      padding: 8px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      color: var(--text-primary);
+      background: var(--bg-input);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: var(--shadow-focus);
+    }
+
+    /* --- Buttons --- */
+    button {
+      background: var(--accent-gradient);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(91,127,255,0.25);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(91,127,255,0.35);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 4px rgba(91,127,255,0.2);
+    }
+
+    button.secondary {
+      background: var(--bg-input);
+      color: var(--text-secondary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    button.secondary:hover {
+      background: var(--border);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      background: var(--border);
+      color: var(--text-muted);
+      cursor: not-allowed;
+      opacity: 0.7;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* --- Magnet / Result Lists --- */
+    .magnet-list {
+      max-height: 300px;
+      overflow-y: auto;
+      border-radius: var(--radius-md);
+    }
+
+    /* Custom scrollbar */
+    .magnet-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .magnet-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .magnet-list::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: var(--radius-pill);
+    }
+
+    .magnet-list::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    .magnet-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 8px;
+      border-radius: var(--radius-sm);
+      transition: background 0.15s ease;
+    }
+
+    .magnet-item:hover {
+      background: var(--bg-hover);
+    }
+
+    .magnet-item + .magnet-item {
+      border-top: 1px solid var(--border);
+    }
+
+    /* --- Custom checkbox --- */
+    .magnet-item input[type="checkbox"],
+    .result-item input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border);
+      border-radius: 5px;
+      margin-right: 10px;
+      cursor: pointer;
+      flex-shrink: 0;
+      position: relative;
+      transition: all 0.15s ease;
+      background: var(--bg-input);
+    }
+
+    .magnet-item input[type="checkbox"]:checked,
+    .result-item input[type="checkbox"]:checked {
+      background: var(--accent-gradient);
+      border-color: transparent;
+    }
+
+    .magnet-item input[type="checkbox"]:checked::after,
+    .result-item input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 5px;
+      width: 5px;
+      height: 9px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    .magnet-item input[type="checkbox"]:hover,
+    .result-item input[type="checkbox"]:hover {
+      border-color: var(--accent);
+    }
+
+    .select-all-row {
+      background: var(--bg-select-all);
+      border-radius: var(--radius-sm);
+      border-bottom: none;
+      margin-bottom: 4px;
+    }
+
+    .select-all-row:hover {
+      background: var(--bg-hover);
+    }
+
+    .select-all-row label {
+      text-transform: none;
+      font-size: 13px;
+      letter-spacing: 0;
+      color: var(--text-primary);
+      margin-bottom: 0;
+    }
+
+    #category-row label {
+      display: inline;
+      text-transform: none;
+      font-size: 13px;
+      letter-spacing: 0;
+      color: var(--text-secondary);
+      margin-bottom: 0;
+    }
+
+    .magnet-name {
+      flex-grow: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    .copy-btn {
+      background: none;
+      border: none;
+      padding: 4px 10px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 500;
+      flex-shrink: 0;
+      min-width: auto;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s ease;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .copy-btn:hover {
+      color: var(--accent);
+      background: var(--bg-hover);
+      box-shadow: none;
+      transform: none;
+    }
+
+    /* --- Status icons --- */
+    .magnet-item .status-icon,
+    .result-item .status-icon {
+      flex-shrink: 0;
+      margin-left: 6px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .magnet-item .status-icon.success,
+    .result-item .status-icon.success {
+      color: var(--success);
+    }
+
+    .magnet-item .status-icon.fail,
+    .result-item .status-icon.fail {
+      color: var(--error);
+    }
+
+    /* --- Status messages (toast) --- */
     .status-message {
-      padding: 8px;
+      padding: 10px 14px;
       margin-top: 8px;
-      border-radius: 4px;
+      border-radius: var(--radius-md);
       display: none;
+      font-size: 13px;
+      font-weight: 500;
     }
 
     .status-message.success {
-      background-color: #C8E6C9;
-      color: #2E7D32;
+      background-color: var(--success-bg);
+      color: #065F46;
       display: block;
+      box-shadow: 0 2px 8px rgba(16,185,129,0.12);
     }
 
     .status-message.error {
-      background-color: #FFCDD2;
-      color: #C62828;
+      background-color: var(--error-bg);
+      color: #991B1B;
       display: block;
+      box-shadow: 0 2px 8px rgba(239,68,68,0.12);
     }
 
-    .search-panel {
-      background: #f5f5f5;
-      padding: 16px;
-      border-radius: 8px;
-    }
-
+    /* --- Search results --- */
     .result-item {
       display: flex;
       align-items: center;
-      padding: 8px;
-      border-bottom: 1px solid #ddd;
+      padding: 10px 8px;
+      border-radius: var(--radius-sm);
+      transition: background 0.15s ease;
     }
 
-    .result-item:last-child {
-      border-bottom: none;
+    .result-item:hover {
+      background: var(--bg-hover);
     }
 
-    .result-item input[type="checkbox"] {
-      margin-right: 8px;
+    .result-item + .result-item {
+      border-top: 1px solid var(--border);
     }
 
     .result-info {
@@ -213,6 +424,7 @@
       flex-direction: column;
       flex-grow: 1;
       overflow: hidden;
+      gap: 2px;
     }
 
     .result-name {
@@ -220,118 +432,108 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      font-size: 13px;
     }
 
     .result-meta {
-      font-size: 12px;
-      color: #888;
+      font-size: 11px;
+      color: var(--text-muted);
       display: flex;
-      gap: 12px;
+      gap: 10px;
     }
 
     .result-meta span {
-      display: inline;
+      display: inline-flex;
+      align-items: center;
     }
 
     .seeders {
-      color: #4CAF50;
+      color: var(--seeders);
+      font-weight: 600;
     }
 
     .leechers {
-      color: #f44336;
+      color: var(--leechers);
+      font-weight: 600;
     }
 
     .tracker {
-      color: #2196F3;
+      color: var(--tracker);
+      font-weight: 500;
     }
 
     .result-size {
-      color: #666;
+      color: var(--text-secondary);
+      font-weight: 500;
     }
 
+    /* ========================
+       DARK MODE
+       ======================== */
     @media (prefers-color-scheme: dark) {
+      :root {
+        --accent: #7B9FFF;
+        --accent-hover: #6B8FEF;
+        --accent-gradient: linear-gradient(135deg, #7B9FFF 0%, #A78BFA 100%);
+        --bg-body: #0F1117;
+        --bg-card: #1A1D2A;
+        --bg-input: #222638;
+        --bg-hover: #252A3D;
+        --bg-select-all: #1E2235;
+        --text-primary: #E8EAF0;
+        --text-secondary: #9CA3AF;
+        --text-muted: #6B7280;
+        --border: #2D3348;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+        --shadow-md: 0 4px 16px rgba(0,0,0,0.25);
+        --shadow-lg: 0 8px 30px rgba(0,0,0,0.3);
+        --shadow-focus: 0 0 0 3px rgba(123,159,255,0.25);
+        --success: #34D399;
+        --success-bg: #064E3B;
+        --error: #F87171;
+        --error-bg: #7F1D1D;
+        --seeders: #34D399;
+        --leechers: #FBBF24;
+        --tracker: #A5B4FC;
+      }
+
       body {
-        background-color: #1e1e1e;
-        color: #e0e0e0;
-      }
-
-      .settings-panel, .links-panel {
-        background: #2d2d2d;
-      }
-
-      input[type="text"],
-      input[type="password"],
-      input[type="url"],
-      #search-filter {
-        background-color: #3a3a3a;
-        border-color: #555;
-        color: #e0e0e0;
-      }
-
-      select {
-        background-color: #3a3a3a;
-        border-color: #555;
-        color: #e0e0e0;
-      }
-
-      .magnet-item {
-        border-bottom-color: #444;
-      }
-
-      .select-all-row {
-        background-color: #333;
-        border-bottom-color: #555;
-      }
-
-      .tab-button {
-        color: #aaa;
+        background-color: var(--bg-body);
+        color: var(--text-primary);
       }
 
       .tab-button.active {
-        color: #64B5F6;
-        border-bottom-color: #64B5F6;
+        box-shadow: 0 2px 8px rgba(123,159,255,0.25);
       }
 
-      label {
-        color: #e0e0e0;
+      button {
+        box-shadow: 0 2px 8px rgba(123,159,255,0.2);
       }
 
-      h3 {
-        color: #e0e0e0;
+      button:hover {
+        box-shadow: 0 4px 14px rgba(123,159,255,0.3);
       }
 
-      .copy-btn {
-        color: #aaa;
-      }
-
-      .copy-btn:hover {
-        color: #64B5F6;
+      button.secondary {
+        box-shadow: var(--shadow-sm);
       }
 
       .status-message.success {
-        background-color: #1B5E20;
-        color: #A5D6A7;
+        color: #A7F3D0;
+        box-shadow: 0 2px 8px rgba(52,211,153,0.1);
       }
 
       .status-message.error {
-        background-color: #B71C1C;
-        color: #EF9A9A;
+        color: #FECACA;
+        box-shadow: 0 2px 8px rgba(248,113,113,0.1);
       }
 
-      .search-panel {
-        background: #2d2d2d;
+      .magnet-list::-webkit-scrollbar-thumb {
+        background: var(--border);
       }
 
-      .result-item {
-        border-bottom-color: #444;
-      }
-
-      .result-meta {
-        color: #aaa;
-      }
-
-      .result-size {
-        color: #aaa;
+      .magnet-list::-webkit-scrollbar-thumb:hover {
+        background: var(--text-muted);
       }
     }
   </style>
@@ -352,10 +554,10 @@
             <input type="checkbox" id="select-all">
             <label for="select-all" class="magnet-name" style="font-weight: 600;">Select All</label>
           </div>
-          <input type="text" id="search-filter" placeholder="Filter magnet links..." style="width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; display: none;">
+          <input type="text" id="search-filter" placeholder="Filter magnet links..." style="width: 100%; margin-bottom: 8px; display: none;">
           <div id="category-row" style="display: none; margin-bottom: 8px;">
             <label for="category-select" style="display: inline; margin-right: 8px;">Category:</label>
-            <select id="category-select" style="padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <select id="category-select">
               <option value="">No category</option>
             </select>
           </div>
@@ -364,8 +566,8 @@
               <p>No magnet links found on this page.</p>
             </div>
           </div>
-          <div style="margin-top: 16px; display: flex; gap: 8px;">
-            <button id="refresh-links">Refresh Links</button>
+          <div style="margin-top: 14px; display: flex; gap: 8px;">
+            <button id="refresh-links" class="secondary">Refresh</button>
             <button id="download-selected">Download Selected</button>
           </div>
         </div>
