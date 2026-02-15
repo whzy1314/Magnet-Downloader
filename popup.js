@@ -95,7 +95,7 @@ async function loadCategories() {
     const select = document.getElementById('category-select');
     const categoryRow = document.getElementById('category-row');
 
-    select.innerHTML = '<option value="">No category</option>';
+    select.innerHTML = '<option value="">Uncategorized</option>';
 
     for (const name of Object.keys(categories).sort()) {
       const option = document.createElement('option');
